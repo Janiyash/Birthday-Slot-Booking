@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Yash Birthday Public Convoy 2026</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+/* ===== BODY ===== */
+body{
+margin:0;
+font-family:Arial, sans-serif;
+background:
+url("https://res.cloudinary.com/denasb3ca/image/upload/v1772460693/eut2_hq_68fcd0e2.jpg_aflc6f.jpg")
+no-repeat center center fixed;
+background-size:cover;
+color:#fff;
+text-align:left;
+}
+
+.header{
+max-width:650px;
+margin:40px 60px 10px auto;
+text-align:left;
+}
+
+.header-title{
+font-size:38px;
+font-weight:700;
+color:#ffffff;
+text-shadow:0 0 25px rgba(0,0,0,0.8);
+}
+
+.sub{
+margin-top:8px;
+font-size:15px;
+color:#f1f1f1;
+text-shadow:0 0 10px rgba(0,0,0,0.8);
+}
+
+/* ===== RIGHT SIDE CONTAINER ===== */
+.container{
+max-width:650px;
+margin:40px 60px 40px auto;   /* pushes to right */
+padding:35px;
+border-radius:20px;
+background:rgba(255,255,255,0.08);   /* transparent glass */
+backdrop-filter:blur(18px);
+border:1px solid rgba(255,255,255,0.2);
+box-shadow:0 0 40px rgba(0,0,0,0.6);
+}
+
+/* ===== INPUTS ===== */
+input{
+width:100%;
+padding:14px;
+margin:12px 0;
+border-radius:12px;
+border:1px solid rgba(255,255,255,0.3);
+background:rgba(255,255,255,0.07);
+color:#fff;
+font-size:14px;
+}
+
+input:focus{
+outline:none;
+border:1px solid #ff4444;
+box-shadow:0 0 15px rgba(255,0,0,0.6);
+}
+
+/* ===== BUTTONS ===== */
+button{
+width:100%;
+padding:14px;
+margin:12px 0;
+border-radius:12px;
+border:none;
+font-size:14px;
+font-weight:bold;
+cursor:pointer;
+background:#ff4444;
+color:#fff;
+transition:0.3s ease;
+}
+
+button:hover{
+background:#ff0000;
+transform:translateY(-2px);
+}
+
+/* ===== SLOTS ===== */
+.slots{
+display:grid;
+grid-template-columns:repeat(5,1fr);
+gap:12px;
+margin-top:20px;
+}
+
+.slot-btn{
+background:rgba(255,255,255,0.1);
+border:1px solid rgba(255,255,255,0.3);
+padding:12px;
+border-radius:10px;
+cursor:pointer;
+color:#fff;
+transition:0.3s ease;
+backdrop-filter:blur(8px);
+}
+
+.slot-btn:hover{
+transform:scale(1.05);
+box-shadow:0 0 15px rgba(255,0,0,0.7);
+}
+
+.slot-btn.selected{
+background:green;
+box-shadow:0 0 15px lime;
+}
+
+.slot-btn.booked{
+background:red;
+cursor:not-allowed;
+box-shadow:0 0 15px red;
+}
+
+/* ===== ADMIN ===== */
+.admin{
+display:none;
+margin-top:20px;
+background:rgba(255,255,255,0.07);
+padding:25px;
+border-radius:15px;
+backdrop-filter:blur(15px);
+border:1px solid rgba(255,255,255,0.2);
+}
+
+/* ===== ALERT ===== */
+.alert{
+position:fixed;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+background:rgba(0,0,0,0.9);
+padding:25px 40px;
+border-radius:15px;
+border:2px solid red;
+display:none;
+z-index:9999;
+box-shadow:0 0 30px red;
+}
+/* ===== PROFESSIONAL CONFIRM POPUP ===== */
+
+.professional-popup{
+max-width:420px;
+background:linear-gradient(145deg,#1c1c1c,#111);
+border-radius:20px;
+box-shadow:0 0 60px rgba(255,0,0,0.5);
+animation:popupFade 0.3s ease;
+}
+
+@keyframes popupFade{
+from{transform:scale(0.9);opacity:0;}
+to{transform:scale(1);opacity:1;}
+}
+
+.popup-header{
+text-align:center;
+position:relative;
+padding-bottom:15px;
+border-bottom:1px solid rgba(255,255,255,0.1);
+}
+
+.success-icon{
+width:60px;
+height:60px;
+background:#28a745;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:28px;
+margin:0 auto 15px;
+box-shadow:0 0 20px rgba(40,167,69,0.7);
+}
+
+.popup-header h2{
+margin:5px 0 10px;
+font-size:22px;
+}
+
+.close-icon{
+position:absolute;
+right:0;
+top:0;
+cursor:pointer;
+font-size:18px;
+color:#aaa;
+}
+.close-icon:hover{
+color:#fff;
+}
+
+.popup-body{
+padding:20px 0;
+font-size:15px;
+}
+
+.info-row{
+display:flex;
+justify-content:space-between;
+margin:8px 0;
+padding-bottom:6px;
+border-bottom:1px dashed rgba(255,255,255,0.1);
+}
+
+.info-label{
+color:#bbb;
+}
+
+.info-value{
+font-weight:bold;
+}
+/* ===== POPUP OVERLAY ===== */
+.popup{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.7);
+display:none;
+align-items:center;
+justify-content:center;
+z-index:9998;
+}
+
+.popup-box{
+width:600px;          /* increased width */
+max-width:95%;
+min-height:500px;     /* increased height */
+padding:50px;         /* more inner spacing */
+border-radius:20px;
+}
+
+.booking-id{
+text-align:center;
+margin-top:20px;
+font-size:15px;       /* slightly bigger text */
+color:#ff4444;
+}
+
+.popup-footer{
+text-align:center;
+margin-top:25px;
+}
+
+.primary-btn{
+background:#ff4444;
+padding:12px 30px;
+border:none;
+border-radius:12px;
+font-weight:bold;
+cursor:pointer;
+}
+.primary-btn:hover{
+background:#ff0000;
+}
+#bookingPopup .popup-box{
+max-width:800px;
+width:90%;
+max-height:80vh;
+overflow:auto;
+background:rgba(0,0,0,0.85);
+border:1px solid rgba(255,255,255,0.2);
+}
+
+#bookingPopup table{
+font-size:14px;
+}
+
+#bookingPopup th{
+font-weight:bold;
+}
+
+#bookingPopup button{
+margin-top:20px;
+}
+</style></head>
+
+<body>
+
+<div class="header">
+<div class="header-title">Yash Birthday Public Convoy 2026</div>
+<div class="sub">
+📅 20/09/2026 | 🎮 ETS2 <br>
+📍 Milan ➝ Strasbourg (Stein Bruch)
+</div>
+</div>
+
+<div class="container">
+
+<input type="text" id="vtcName" placeholder="Company Name">
+<input type="text" id="vtcRole" placeholder="Role">
+<input type="url" id="vtcLink" placeholder="TruckersMP VTC Link">
+<input type="text" id="discordId" placeholder="@DiscordUsername">
+
+<div class="slots" id="slotContainer"></div>
+
+<button onclick="submitBooking()">Book Slot</button>
+<button onclick="viewBookings()">View Bookings</button>
+<button onclick="toggleAdmin()">Admin</button>
+
+<div class="admin" id="adminSection">
+
+<input type="password" id="adminPass" placeholder="Enter Admin Password">
+<button onclick="adminLogin()">Login</button>
+
+
+<div id="adminControls" style="display:none;">
+
+<hr>
+
+<button onclick="resetAll()">Reset All Bookings</button>
+<button onclick="deleteBooking()">Delete Selected Booking</button>
+
+<input type="text" id="renameInput" placeholder="Rename Selected Slot">
+<button onclick="renameSlot()">Rename Slot</button>
+
+<input type="text" id="customSlotName" placeholder="Add Custom Slot">
+<button onclick="addSlot()">Add Slot</button>
+<button onclick="deleteSelectedSlot()">Delete Selected Slot</button>
+
+<hr>
+
+<input type="text" id="bgInput" placeholder="Background Image URL">
+<button onclick="changeBackground()">Change Background</button>
+<button onclick="removeBackground()">Remove Background</button>
+
+<hr>
+
+<input type="text" id="publicImageInput" placeholder="Public Banner Image URL">
+<button onclick="setPublicImage()">Set Public Image</button>
+
+<hr>
+
+<button onclick="adminLogout()">Logout</button>
+
+</div>
+</div>
+
+<div id="publicImageDisplay"></div>
+
+</div>
+
+<div class="alert" id="alertBox"></div>
+<div class="popup" id="bookingPopup">
+<div class="popup-box">
+<h3>All Bookings</h3>
+<div id="bookingList"></div>
+<button onclick="closeBookingPopup()">Close</button>
+</div>
+</div>
+
+<div class="popup" id="popup">
+<div class="popup-box professional-popup">
+
+<div class="popup-header">
+<div class="success-icon">✔</div>
+<h2>Booking Confirmed</h2>
+<span class="close-icon" onclick="closePopup()">✕</span>
+</div>
+
+<div class="popup-body" id="popupContent"></div>
+
+<div class="popup-footer">
+<button class="primary-btn" onclick="closePopup()">Done</button>
+<p style="margin-top:30px;font-size:14px;color:#ec1010;line-height:1.6;">
+Thank you for booking your slot for Our Birthday Public Convoy 2026.</p>
+<p>We truly appreciate your participation and look forward to seeing you on the road.
+</p>
+</div>
+
+</div>
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+import { getDatabase, ref, set, get, remove } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
+
+const firebaseConfig={
+  apiKey: "AIzaSyAAjowyn0OPtkVLZliB5iKN7WTS3I00dPE",
+  authDomain: "yash-birthday-convoy-2026.firebaseapp.com",
+  databaseURL: "https://yash-birthday-convoy-2026-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "yash-birthday-convoy-2026",
+  storageBucket: "yash-birthday-convoy-2026.firebasestorage.app",
+  messagingSenderId: "474014206801",
+  appId: "1:474014206801:web:f029925dbdcd5c9f7ca170"
+};
+
+const app=initializeApp(firebaseConfig);
+const db=getDatabase(app);
+
+let totalSlots=30;
+let selectedSlot=null;
+let isAdmin=false;
+const slotContainer=document.getElementById("slotContainer");
+
+function createSlot(num,name=null){
+const btn=document.createElement("button");
+btn.classList.add("slot-btn");
+btn.innerText=name?name:num;
+btn.dataset.slot=num;
+
+
+btn.onclick=()=>{
+if(btn.classList.contains("booked") && !isAdmin) return;
+document.querySelectorAll(".slot-btn").forEach(b=>b.classList.remove("selected"));
+selectedSlot=num;
+btn.classList.add("selected");
+};
+
+slotContainer.appendChild(btn);
+}
+
+for(let i=1;i<=totalSlots;i++){createSlot(i);}
+
+const bookingsRef=ref(db,"bookings");
+
+get(bookingsRef).then(snap=>{
+if(snap.exists()){
+const data=snap.val();
+Object.keys(data).forEach(k=>{
+const slot=parseInt(k.replace("slot",""));
+const btn=document.querySelector(`[data-slot='${slot}']`);
+if(btn){
+btn.classList.add("booked");
+}
+});
+}
+});
+
+function showAlert(msg){
+alertBox.innerText=msg;
+alertBox.style.display="block";
+setTimeout(()=>alertBox.style.display="none",3000);
+}
+
+window.adminLogin=()=>{
+get(ref(db,"admin/password")).then(snap=>{
+if(snap.exists()&&adminPass.value===snap.val()){
+adminControls.style.display="block";
+isAdmin=true; // ✅ enable admin selection
+showAlert("Admin logged in");
+}else showAlert("Wrong password");
+});
+};
+window.adminLogout=()=>{
+adminControls.style.display="none";
+adminPass.value="";
+isAdmin=false; // ✅ disable admin selection
+};
+
+window.submitBooking=()=>{
+const name=vtcName.value.trim();
+const role=vtcRole.value.trim();
+const link=vtcLink.value.trim();
+const discord=discordId.value.trim();
+
+if(!name||!role||!link||!discord||!selectedSlot){
+showAlert("Fill all fields and select slot");
+return;
+}
+
+get(bookingsRef).then(snap=>{
+if(snap.exists()){
+const data=snap.val();
+for(let key in data){
+if(data[key].discordId===discord||
+data[key].vtcName.toLowerCase()===name.toLowerCase()||
+data[key].vtcLink.toLowerCase()===link.toLowerCase()){
+showAlert("Duplicate entry detected");
+return;
+}
+}
+}
+
+const bookingData={
+vtcName:name,
+vtcRole:role,
+vtcLink:link,
+discordId:discord,
+slot:selectedSlot,
+timestamp:new Date().toISOString()
+};
+
+set(ref(db,"bookings/slot"+selectedSlot),bookingData).then(()=>{
+document.querySelector(`[data-slot='${selectedSlot}']`).classList.add("booked");
+const bookingId = "YBP" + Math.floor(Math.random()*100000);
+
+popupContent.innerHTML = `
+<div class="info-row">
+<span class="info-label">Slot</span>
+<span class="info-value">${selectedSlot}</span>
+</div>
+
+<div class="info-row">
+<span class="info-label">Company</span>
+<span class="info-value">${name}</span>
+</div>
+
+<div class="info-row">
+<span class="info-label">Role</span>
+<span class="info-value">${role}</span>
+</div>
+
+<div class="info-row">
+<span class="info-label">Discord</span>
+<span class="info-value">${discord}</span>
+</div>
+
+
+</div>
+`;
+popup.style.display="flex";
+
+get(ref(db,"webhook")).then(w=>{
+if(w.exists()){
+fetch(w.val().url,{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({content: `<@715583272062681110>,<@&1387618438549340212>,<@&1338823646419882055>\n🚀 A new VTC booking has been made!`,
+      embeds: [{
+        title: `✅ NEW VTC BOOKING!`, // slot hidden
+        description: `🚛 **VTC Name:** ${bookingData.vtcName}\n\n🎖️ **Role:** ${bookingData.vtcRole}\n\n🔗 **Link:** ${bookingData.vtcLink}\n\n💺**Slot:** ${bookingData.slot}\n\n💬 **Discord ID:** ${bookingData.discordId}`,
+        color: 16711680,
+        image: {
+          url: "https://i.imgur.com/Vt6UaZn.gif"
+        },
+        timestamp: new Date().toISOString()
+        
+}]
+})
+});
+}
+});
+
+});
+});
+};
+
+window.clearForm=()=>{
+vtcName.value="";
+vtcRole.value="";
+vtcLink.value="";
+discordId.value="";
+selectedSlot=null;
+document.querySelectorAll(".slot-btn").forEach(b=>b.classList.remove("selected"));
+};
+
+window.closePopup=()=>popup.style.display="none";
+
+window.toggleAdmin=()=>{
+adminSection.style.display=
+adminSection.style.display==="block"?"none":"block";
+};
+
+
+
+window.resetAll=()=>{
+if(confirm("Reset all bookings?")){
+remove(bookingsRef).then(()=>{
+document.querySelectorAll(".slot-btn").forEach(b=>{
+b.classList.remove("booked","selected");
+b.disabled=false;
+});
+});
+}
+};
+
+window.deleteBooking=()=>{
+
+if(!selectedSlot){
+showAlert("Select slot first");
+return;
+}
+
+remove(ref(db,"bookings/slot"+selectedSlot)).then(()=>{
+
+const btn=document.querySelector(`[data-slot='${selectedSlot}']`);
+
+btn.classList.remove("booked","selected");
+
+selectedSlot=null;
+
+showAlert("Booking deleted successfully");
+
+});
+
+};
+
+window.addSlot=()=>{
+totalSlots++;
+createSlot(totalSlots,customSlotName.value||totalSlots);
+customSlotName.value="";
+};
+
+window.deleteSelectedSlot=()=>{
+if(!selectedSlot)return showAlert("Select slot first");
+document.querySelector(`[data-slot='${selectedSlot}']`).remove();
+selectedSlot=null;
+};
+
+window.renameSlot=()=>{
+if(!selectedSlot)return showAlert("Select slot first");
+const newName=renameInput.value.trim();
+if(!newName)return showAlert("Enter new name");
+document.querySelector(`[data-slot='${selectedSlot}']`).innerText=newName;
+renameInput.value="";
+};
+
+window.changeBackground=()=>{
+document.body.style.background=
+"url('"+bgInput.value+"') no-repeat center center fixed";
+document.body.style.backgroundSize="cover";
+};
+
+window.removeBackground=()=>{
+document.body.style.background="#000";
+};
+
+window.setPublicImage=()=>{
+const url=publicImageInput.value.trim();
+if(!url)return;
+set(ref(db,"public/image"),url).then(()=>{
+publicImageDisplay.innerHTML=
+"<img src='"+url+"' style='max-width:100%;margin-top:20px;border-radius:10px;'>";
+});
+};
+
+get(ref(db,"public/image")).then(snap=>{
+if(snap.exists()){
+publicImageDisplay.innerHTML=
+"<img src='"+snap.val()+"' style='max-width:100%;margin-top:20px;border-radius:10px;'>";
+}
+});
+window.viewBookings = () => {
+
+  get(bookingsRef).then(snapshot => {
+
+    bookingPopup.style.display = "flex";
+
+    if (!snapshot.exists()) {
+      bookingList.innerHTML = `
+        <div style="text-align:center;padding:40px;">
+          <h3>No Bookings Yet</h3>
+        </div>`;
+      return;
+    }
+
+    const data = snapshot.val();
+    const sorted = Object.values(data).sort((a,b)=>a.slot-b.slot);
+
+    let html = `
+    <table style="
+      width:100%;
+      border-collapse:collapse;
+      text-align:center;
+      background:rgba(255,255,255,0.05);
+      border-radius:10px;
+      overflow:hidden;
+    ">
+      <thead style="background:#ff4444;">
+        <tr>
+          <th style="padding:12px;">Slot</th>
+          <th style="padding:12px;">Company</th>
+          <th style="padding:12px;">Role</th>
+          <th style="padding:12px;">Discord</th>
+        </tr>
+      </thead>
+      <tbody>
+    `;
+
+    sorted.forEach(booking=>{
+      html+=`
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.2);">
+          <td style="padding:10px;font-weight:bold;color:#ff4444;">
+            ${booking.slot}
+          </td>
+          <td style="padding:10px;">
+            ${booking.vtcName}
+          </td>
+          <td style="padding:10px;">
+            ${booking.vtcRole}
+          </td>
+          <td style="padding:10px;">
+            ${booking.discordId}
+          </td>
+        </tr>
+      `;
+    });
+
+    html+=`</tbody></table>`;
+
+    bookingList.innerHTML = html;
+
+  });
+
+
+}
+// ===== CLOSE BOOKING POPUP =====
+window.closeBookingPopup = () => {
+  bookingPopup.style.display = "none";
+};
+
+document.addEventListener("contextmenu", function(e){
+    e.preventDefault();
+});
+
+// Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+document.addEventListener("keydown", function(e){
+
+    // F12
+    if (e.key === "F12") {
+        e.preventDefault();
+    }
+
+    // Ctrl+Shift+I
+    if (e.ctrlKey && e.shiftKey && e.key === "I") {
+        e.preventDefault();
+    }
+
+    // Ctrl+Shift+J
+    if (e.ctrlKey && e.shiftKey && e.key === "J") {
+        e.preventDefault();
+    }
+
+    // Ctrl+U (View Source)
+    if (e.ctrlKey && e.key === "u") {
+        e.preventDefault();
+    }
+
+});
+
+// Basic DevTools detection
+setInterval(function(){
+    if (window.outerWidth - window.innerWidth > 160 ||
+        window.outerHeight - window.innerHeight > 160){
+        document.body.innerHTML = "<h1 style='color:red;text-align:center;margin-top:20%;'>Developer Tools Detected</h1>";
+    }
+}, 1000);
+</script>
+
+</body>
+</html>
