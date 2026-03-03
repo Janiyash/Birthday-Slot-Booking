@@ -401,7 +401,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-let totalSlots=30;
+let totalSlots = 0;
 let selectedSlot=null;
 let isAdmin=false;
 const slotContainer=document.getElementById("slotContainer");
@@ -423,8 +423,34 @@ btn.classList.add("selected");
 slotContainer.appendChild(btn);
 }
 
-for(let i=1;i<=totalSlots;i++){createSlot(i);}
+const slotsRef = ref(db, "slots");
 
+function loadSlots(){
+get(slotsRef).then(snap=>{
+if(snap.exists()){
+const data = snap.val();
+slotContainer.innerHTML="";
+totalSlots = Object.keys(data).length;
+
+Object.keys(data)
+.sort((a,b)=>{
+    return parseInt(a.replace("slot","")) - parseInt(b.replace("slot",""));
+})
+.forEach(key=>{
+    createSlot(parseInt(key.replace("slot","")), data[key].name);
+});
+}else{
+// First time setup → create 30 default slots
+let defaultSlots = {};
+for(let i=1;i<=30;i++){
+defaultSlots["slot"+i] = { name: i };
+}
+set(slotsRef, defaultSlots).then(()=>loadSlots());
+}
+});
+}
+
+loadSlots();
 const bookingsRef=ref(db,"bookings");
 
 get(bookingsRef).then(snap=>{
@@ -578,31 +604,29 @@ b.disabled=false;
 }
 };
 
-window.deleteBooking=()=>{
+window.deleteSelectedSlot = ()=>{
+if(!selectedSlot) return showAlert("Select slot first");
 
-if(!selectedSlot){
-showAlert("Select slot first");
-return;
-}
-
-remove(ref(db,"bookings/slot"+selectedSlot)).then(()=>{
-
-const btn=document.querySelector(`[data-slot='${selectedSlot}']`);
-
-btn.classList.remove("booked","selected");
-
+remove(ref(db,"slots/slot"+selectedSlot)).then(()=>{
+document.querySelector(`[data-slot='${selectedSlot}']`).remove();
 selectedSlot=null;
-
-showAlert("Booking deleted successfully");
-
+showAlert("Slot deleted permanently");
 });
-
 };
 
-window.addSlot=()=>{
+window.addSlot = ()=>{
+const name = customSlotName.value.trim();
+if(!name) return showAlert("Enter slot name");
+
 totalSlots++;
-createSlot(totalSlots,customSlotName.value||totalSlots);
+
+set(ref(db,"slots/slot"+totalSlots),{
+name:name
+}).then(()=>{
+createSlot(totalSlots,name);
 customSlotName.value="";
+showAlert("Slot added permanently");
+});
 };
 
 window.deleteSelectedSlot=()=>{
@@ -611,12 +635,17 @@ document.querySelector(`[data-slot='${selectedSlot}']`).remove();
 selectedSlot=null;
 };
 
-window.renameSlot=()=>{
-if(!selectedSlot)return showAlert("Select slot first");
-const newName=renameInput.value.trim();
-if(!newName)return showAlert("Enter new name");
+window.renameSlot = ()=>{
+if(!selectedSlot) return showAlert("Select slot first");
+
+const newName = renameInput.value.trim();
+if(!newName) return showAlert("Enter new name");
+
+set(ref(db,"slots/slot"+selectedSlot+"/name"), newName).then(()=>{
 document.querySelector(`[data-slot='${selectedSlot}']`).innerText=newName;
 renameInput.value="";
+showAlert("Slot renamed permanently");
+});
 };
 
 window.changeBackground=()=>{
