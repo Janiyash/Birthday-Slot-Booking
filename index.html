@@ -19,25 +19,36 @@ color:#fff;
 text-align:left;
 }
 
-.header{
-max-width:650px;
-margin:40px 60px 10px auto;
-text-align:left;
-}
+ /* ===== HEADER SECTION ===== */
+        .header {
+            max-width: 650px;
+            margin: 30px 60px 10px auto;
+            position: relative;
+            z-index: 5;
+        }
 
-.header-title{
-font-size:38px;
-font-weight:700;
-color:#ffffff;
-text-shadow:0 0 25px rgba(0,0,0,0.8);
-}
+        .header-title {
+            font-size: clamp(30px, 5vw, 45px);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            font-style: italic;
+            color: #fff;
+            text-shadow: 3px 3px var(--neon-red), -3px -3px var(--neon-blue);
+            line-height: 1;
+        }
 
-.sub{
-margin-top:8px;
-font-size:15px;
-color:#f1f1f1;
-text-shadow:0 0 10px rgba(0,0,0,0.8);
-}
+        .sub {
+            margin-top: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--neon-blue);
+            text-transform: uppercase;
+            border-left: 4px solid var(--neon-red);
+            padding-left: 10px;
+            letter-spacing: 1px;
+        }
+
 
 /* ===== RIGHT SIDE CONTAINER ===== */
 .container{
@@ -750,7 +761,7 @@ wrapper.style.textAlign="center";
 
 const img = document.createElement("img");
 img.src = data[key].url;
-img.style.maxWidth="180px";
+img.style.maxWidth="600px";
 img.style.borderRadius="10px";
 img.style.cursor="pointer";
 img.style.boxShadow="0 0 15px rgba(255,0,0,0.6)";
