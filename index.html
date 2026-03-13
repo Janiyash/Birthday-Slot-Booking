@@ -38,18 +38,32 @@ text-align:left;
             line-height: 1;
         }
 
-        .sub {
-            margin-top: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            color: var(--neon-blue);
-            text-transform: uppercase;
-            border-left: 4px solid var(--neon-red);
-            padding-left: 10px;
-            letter-spacing: 1px;
-        }
+.sub{
+margin-top:10px;
+font-size:16px;
+font-weight:bold;
+color:var(--neon-blue);
+text-transform:uppercase;
+border-left:4px solid var(--neon-red);
+padding-left:10px;
+letter-spacing:1px;
 
-
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:15px;
+}
+.view-book-btn{
+width:auto !important;
+display:inline-block;
+padding:6px 14px;
+font-size:12px;
+border-radius:6px;
+background:#ff4444;
+margin:0;
+white-space:nowrap;
+flex-shrink:0;
+}
 /* ===== RIGHT SIDE CONTAINER ===== */
 .container{
 max-width:650px;
@@ -105,7 +119,19 @@ transform:translateY(-2px);
 display:grid;
 grid-template-columns:repeat(5,1fr);
 gap:12px;
+margin-top:15px;
+margin-bottom:15px;
+}
+
+.section-block{
+margin-bottom:40px;
+}
+
+.section-title{
+font-size:22px;
+font-weight:bold;
 margin-top:20px;
+margin-bottom:10px;
 }
 
 .slot-btn{
@@ -277,13 +303,28 @@ cursor:pointer;
 .primary-btn:hover{
 background:#ff0000;
 }
-#bookingPopup .popup-box{
-max-width:800px;
-width:90%;
-max-height:80vh;
-overflow:auto;
-background:rgba(0,0,0,0.85);
+#bookingFormPopup .popup-box{
+width:600px;
+max-width:95%;
+min-height:500px;
+padding:35px; /* reduced padding so content fits */
+border-radius:20px;
 border:1px solid rgba(255,255,255,0.2);
+box-shadow:0 0 40px rgba(255,0,0,0.4);
+display:flex;
+flex-direction:column;
+justify-content:center;
+}
+
+#bookingFormPopup input{
+padding:10px;
+font-size:14px;
+margin:6px 0; /* reduced spacing */
+
+}
+
+#bookingFormPopup button{
+margin-top:10px;
 }
 
 #bookingPopup table{
@@ -297,29 +338,59 @@ font-weight:bold;
 #bookingPopup button{
 margin-top:20px;
 }
+#bookBtn{
+display:none;
+width:100%;
+margin-top:15px;
+box-shadow:0 0 20px red;
+}
+
+.booking-summary{
+background:rgba(255,255,255,0.05);
+border-radius:12px;
+padding:10px;
+border:1px solid rgba(255,255,255,0.1);
+margin-bottom:8px;
+}
+
+.summary-row{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:10px 0;
+font-size:14px;
+border-bottom:1px dashed rgba(255,255,255,0.2);
+}
+
+.summary-row:last-child{
+border-bottom:none;
+}
+
+.summary-row span{
+color:#aaa;
+}
+
+.summary-row b{
+color:#fff;
+}
 </style></head>
 
 <body>
 
 <div class="header">
-<div class="header-title">Yash Birthday Public Convoy 2026</div>
+<div class="header-title">Yash , AnK And Brock Birthday  Convoy 2026</div>
 <div class="sub">
-📅 20/09/2026 | 🎮 ETS2 <br>
-📍 Milan ➝ Strasbourg (Stein Bruch)
+📅 20/09/2026 | <br>🎮ETS2 <br>
+🗺️ Milan (SLOTS) ➝ 📍Strasbourg <br> &Nscr; (Stein Bruch)
+<button onclick="viewBookings()">View Bookings</button>
 </div>
 </div>
 
 <div class="container">
 
-<input type="text" id="vtcName" placeholder="Company Name">
-<input type="text" id="vtcRole" placeholder="Role">
-<input type="url" id="vtcLink" placeholder="TruckersMP VTC Link">
-<input type="text" id="discordId" placeholder="@DiscordUsername">
 
-<div class="slots" id="slotContainer"></div>
-
-<button onclick="submitBooking()">Book Slot</button>
-<button onclick="viewBookings()">View Bookings</button>
+<div id="slotContainer"></div>
+<button id="bookBtn" onclick="openBookingForm()" style="display:none;">Book Slot</button>
 <button onclick="toggleAdmin()">Admin</button>
 
 <div class="admin" id="adminSection">
@@ -354,7 +425,12 @@ margin-top:20px;
 <button onclick="setPublicImage()">Set Public Image</button>
 
 <hr>
+<hr>
 
+<input type="text" id="sectionNameInput" placeholder="New Section Name">
+<input type="number" id="sectionSlotsInput" placeholder="Number of Slots">
+
+<button onclick="addSection()">Add Section</button>
 <button onclick="adminLogout()">Logout</button>
 
 </div>
@@ -373,7 +449,7 @@ margin-top:20px;
 </div>
 </div>
 
-<div class="popup" id="popup">
+<div class="popup" id="popup">=
   <div class="popup-box professional-popup">
 
     <div class="popup-header">
@@ -465,79 +541,163 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-let totalSlots = 0;
 let selectedSlot = null;
+let selectedSection = null;
 let isAdmin = false;
 
 const slotContainer      = document.getElementById("slotContainer");
 const publicImageDisplay = document.getElementById("publicImageDisplay");
 const alertBox           = document.getElementById("alertBox");
-function createSlot(num,name=null){
+function createSlot(section,slotNum,name=null){
+
 const btn=document.createElement("button");
 btn.classList.add("slot-btn");
-btn.innerText=name?name:num;
-btn.dataset.slot=num;
 
+btn.innerText = name ? name : "Slot "+slotNum;
 
-btn.onclick=()=>{
+btn.dataset.section = section;
+btn.dataset.slot = slotNum;
+
+btn.onclick = ()=>{
+
 if(btn.classList.contains("booked") && !isAdmin) return;
+
 document.querySelectorAll(".slot-btn").forEach(b=>b.classList.remove("selected"));
-selectedSlot=num;
+
+selectedSlot = slotNum;
+selectedSection = section;
+
 btn.classList.add("selected");
+
+const bookBtn = document.getElementById("bookBtn");
+
+btn.parentElement.parentElement.appendChild(bookBtn);
+
+bookBtn.style.display = "block";
 };
 
-slotContainer.appendChild(btn);
+return btn;
+
 }
 
 const slotsRef = ref(db, "slots");
 
+const sectionsRef = ref(db,"sections");
+
 function loadSlots(){
-get(slotsRef).then(snap=>{
-if(snap.exists()){
-const data = snap.val();
+
+get(sectionsRef).then(snap=>{
+
 slotContainer.innerHTML="";
-// Get highest existing slot number instead of length
-const numbers = Object.keys(data).map(k =>
-  parseInt(k.replace("slot",""))
-);
-totalSlots = Math.max(...numbers);
-Object.keys(data)
-.sort((a,b)=>{
-    return parseInt(a.replace("slot","")) - parseInt(b.replace("slot",""));
-})
-.forEach(key=>{
-    createSlot(parseInt(key.replace("slot","")), data[key].name);
+
+if(!snap.exists()){
+
+const defaultData = {
+
+"SECTION-A : MILAN - ACI":{name:"SECTION-A : MILAN - ACI",slots:4},
+"SECTION-B : MILAN - BUS STATION":{name:"SECTION-B : MILAN - BUS STATION",slots:3},
+"SECTION-C : MILAN - SCANIA (F7)":{name:"SECTION-C : MILAN - SCANIA (F7)",slots:4},
+"SECTION-D : MILAN - CARGOTRAS":{name:"SECTION-D : MILAN - CARGOTRAS",slots:4},
+"SECTION-E : MILAN - SPACE NEAR CARGOTRAS":{name:"SECTION-E : MILAN - SPACE NEAR CARGOTRAS",slots:4},
+"SECTION-F : MILAN - GARAGE":{name:"SECTION-F : MILAN - GARAGE",slots:4},
+"SECTION-G : MILAN - IKA":{name:"SECTION-G : MILAN - IKA",slots:4},
+"SECTION-H : MILAN - CEASARE SUPERMERCATO":{name:"SECTION-H : MILAN - CEASARE SUPERMERCATO",slots:4},
+"SECTION-I : MILAN - RECRUITMENT AGENCY":{name:"SECTION-I : MILAN - RECRUITMENT AGENCY",slots:2},
+"SECTION-J : MILAN - HOTEL (NEAR RECRUITMENT)":{name:"SECTION-J : MILAN - HOTEL (NEAR RECRUITMENT)",slots:4},
+"SECTION-K : MILAN - TERSORO GUSTOSO":{name:"SECTION-K : MILAN - TERSORO GUSTOSO",slots:3},
+"SECTION-L : MILAN - LIBELLULA":{name:"SECTION-L : MILAN - LIBELLULA",slots:4},
+"SECTION-M : TURIN - EURO ACRES":{name:"SECTION-M : TURIN - EURO ACRES",slots:3},
+"SECTION-N : TURIN - FCP":{name:"SECTION-N : TURIN - FCP",slots:4},
+"SECTION-O : TURIN - IVECO":{name:"SECTION-O : TURIN - IVECO",slots:1},
+"SECTION-P : TURIN - TRANSINET":{name:"SECTION-P : TURIN - TRANSINET",slots:4},
+"SECTION-Q : TURIN - SELL PLAN":{name:"SECTION-Q : TURIN - SELL PLAN",slots:3},
+"SECTION-Q1 : TURIN - IVECO":{name:"SECTION-Q1 : TURIN - IVECO",slots:1}
+
+
+
+
+
+};
+
+set(sectionsRef,defaultData).then(loadSlots);
+return;
+
+}
+
+const data = snap.val();
+
+Object.keys(data).forEach(sectionKey=>{
+
+const section = data[sectionKey];
+
+const sectionDiv = document.createElement("div");
+sectionDiv.classList.add("section-block");
+
+const title = document.createElement("div");
+title.classList.add("section-title");
+
+title.innerText = section.name;
+
+sectionDiv.appendChild(title);
+
+const grid = document.createElement("div");
+grid.className = "slots";
+
+for(let i=1;i<=section.slots;i++){
+
+const btn = createSlot(sectionKey,i);
+
+grid.appendChild(btn);
+
+}
+sectionDiv.appendChild(grid);
+const imageBox = document.createElement("div");
+imageBox.id = "image-"+sectionKey;
+imageBox.style.marginTop = "10px";
+
+sectionDiv.appendChild(imageBox);
+
+slotContainer.appendChild(sectionDiv);
+
 });
 
-loadBookedSlots(); // 🔥 ADD THIS LINE HERE
-}else{
-// First time setup → create 30 default slots
-let defaultSlots = {};
-for(let i=1;i<=30;i++){
-defaultSlots["slot"+i] = { name: i };
-}
-set(slotsRef, defaultSlots).then(()=>loadSlots());
-}
+loadBookedSlots();
+
 });
+
 }
+
+
 
 loadSlots();
 const bookingsRef=ref(db,"bookings");
 
 function loadBookedSlots(){
+
 get(bookingsRef).then(snap=>{
+
 if(!snap.exists()) return;
 
 const data = snap.val();
 
-Object.keys(data).forEach(k=>{
-const slot = parseInt(k.replace("slot",""));
-const btn = document.querySelector(`[data-slot='${slot}']`);
-if(btn){
-btn.classList.add("booked");
-}
+Object.keys(data).forEach(section=>{
+
+const sectionData = data[section];
+
+Object.keys(sectionData).forEach(slotKey=>{
+
+const slotNum = parseInt(slotKey.replace("slot",""));
+
+const btn = document.querySelector(`[data-section='${section}'][data-slot='${slotNum}']`);
+
+if(btn) btn.classList.add("booked");
+
 });
+
 });
+
+});
+
 }
 
 function showAlert(msg){
@@ -561,13 +721,30 @@ adminPass.value="";
 isAdmin=false; // ✅ disable admin selection
 };
 
+window.openBookingForm = () => {
+
+if(!selectedSlot || !selectedSection){
+showAlert("Please select a slot first");
+return;
+}
+
+document.getElementById("popupSection").innerText = selectedSection.replaceAll("_"," ");
+document.getElementById("popupSlot").innerText = "Slot " + selectedSlot;
+
+document.getElementById("bookingFormPopup").style.display = "flex";
+window.closeBookingForm = () => {
+document.getElementById("bookingFormPopup").style.display = "none";
+
+};
+};
+
 window.submitBooking=()=>{
 const name=vtcName.value.trim();
 const role=vtcRole.value.trim();
 const link=vtcLink.value.trim();
 const discord=discordId.value.trim();
 
-if(!name||!role||!link||!discord||!selectedSlot){
+if(!name||!role||!link||!discord||!selectedSlot||!selectedSection){
 showAlert("Fill all fields and select slot");
 return;
 }
@@ -575,12 +752,20 @@ return;
 get(bookingsRef).then(snap=>{
 if(snap.exists()){
 const data=snap.val();
-for(let key in data){
-if(data[key].discordId===discord||
-data[key].vtcName.toLowerCase()===name.toLowerCase()||
-data[key].vtcLink.toLowerCase()===link.toLowerCase()){
+for(let section in data){
+for(let slot in data[section]){
+
+const entry = data[section][slot];
+
+if(entry.discordId===discord ||
+entry.vtcName.toLowerCase()===name.toLowerCase() ||
+entry.vtcLink.toLowerCase()===link.toLowerCase()){
+
 showAlert("Duplicate entry detected");
 return;
+
+}
+
 }
 }
 }
@@ -590,20 +775,24 @@ vtcName:name,
 vtcRole:role,
 vtcLink:link,
 discordId:discord,
+section:selectedSection,
 slot:selectedSlot,
 timestamp:new Date().toISOString()
 };
 
-set(ref(db,"bookings/slot"+selectedSlot),bookingData).then(()=>{
-document.querySelector(`[data-slot='${selectedSlot}']`).classList.add("booked");
+set(ref(db,"bookings/"+selectedSection+"/slot"+selectedSlot),bookingData).then(()=>{
+document.querySelector(`[data-section='${selectedSection}'][data-slot='${selectedSlot}']`).classList.add("booked");
 const bookingId = "YBP" + Math.floor(Math.random()*100000);
 
 popupContent.innerHTML = `
 <div class="info-row">
+<span class="info-label">Section</span>
+<span class="info-value">${selectedSection}</span>
+</div>
+<div class="info-row">
 <span class="info-label">Slot</span>
 <span class="info-value">${selectedSlot}</span>
 </div>
-
 <div class="info-row">
 <span class="info-label">Company</span>
 <span class="info-value">${name}</span>
@@ -622,8 +811,9 @@ popupContent.innerHTML = `
 
 </div>
 `;
-popup.style.display="flex";
-
+document.getElementById("bookBtn").style.display = "none";  
+closeBookingForm();
+popup.style.display = "flex";
 get(ref(db,"webhook")).then(w=>{
 if(w.exists()){
 fetch(w.val().url,{
@@ -632,7 +822,8 @@ headers:{"Content-Type":"application/json"},
 body:JSON.stringify({content: `<@715583272062681110>,<@&1387618438549340212>,<@&1338823646419882055>\n🚀 A new VTC booking has been made!`,
       embeds: [{
         title: `✅ NEW VTC BOOKING!`, // slot hidden
-        description: `🚛 **VTC Name:** ${bookingData.vtcName}\n\n🎖️ **Role:** ${bookingData.vtcRole}\n\n🔗 **Link:** ${bookingData.vtcLink}\n\n💺**Slot:** ${bookingData.slot}\n\n💬 **Discord ID:** ${bookingData.discordId}`,
+        description: `🚛 **VTC Name:** ${bookingData.vtcName}\n\n🎖️ **Role:** ${bookingData.vtcRole}\n\n🔗 **Link:** ${bookingData.vtcLink}\n\n📍**Section:** ${bookingData.section}
+💺**Slot:** ${bookingData.slot}\n\n💬 **Discord ID:** ${bookingData.discordId}`,
         color: 16711680,
         image: {
           url: "https://i.imgur.com/Vt6UaZn.gif"
@@ -667,15 +858,20 @@ adminSection.style.display==="block"?"none":"block";
 
 
 
-window.resetAll=()=>{
+window.resetAll = ()=>{
+
 if(confirm("Reset all bookings?")){
+
 remove(bookingsRef).then(()=>{
+
 document.querySelectorAll(".slot-btn").forEach(b=>{
 b.classList.remove("booked","selected");
-b.disabled=false;
 });
+
 });
+
 }
+
 };
 window.deleteBooking = () => {
 
@@ -691,23 +887,16 @@ window.deleteBooking = () => {
 
   if (confirm("Delete booking for selected slot?")) {
 
-    remove(ref(db, "bookings/slot" + selectedSlot)).then(() => {
+    remove(ref(db,"bookings/"+selectedSection+"/slot"+selectedSlot)).then(() => {
 
-      const btn = document.querySelector(`[data-slot='${selectedSlot}']`);
+const btn = document.querySelector(`[data-section='${selectedSection}'][data-slot='${selectedSlot}']`);
 
-      if (btn) {
-        btn.classList.remove("booked");
-        btn.classList.remove("selected");
-      }
-
-      selectedSlot = null;
-
-      showAlert("Booking deleted successfully");
-
-    });
-
-  }
-};
+if(btn){
+btn.classList.remove("booked");
+btn.classList.remove("selected");
+}}
+  );
+  }};
 window.deleteSelectedSlot = ()=>{
 if(!selectedSlot) return showAlert("Select slot first");
 
@@ -759,123 +948,160 @@ document.body.style.background="#000";
 };
 
 window.setPublicImage = ()=>{
+
 const url = publicImageInput.value.trim();
+
 if(!url) return showAlert("Enter image URL");
 
-const imageId = "img" + Date.now();
+if(!selectedSection) return showAlert("Select section first");
 
-set(ref(db,"public/images/"+imageId),{
-    url:url,
-    timestamp: new Date().toISOString()
+set(ref(db,"public/images/"+selectedSection),{
+
+url:url,
+timestamp:new Date().toISOString()
+
 }).then(()=>{
-    publicImageInput.value="";
-    loadPublicImages();
-    showAlert("Image added successfully");
+
+publicImageInput.value="";
+
+loadPublicImages();
+
+showAlert("Image added to section");
+
 });
+
 };
 
 function loadPublicImages(){
-get(ref(db,"public/images")).then(snap=>{
 
-publicImageDisplay.innerHTML="";
+get(ref(db,"public/images")).then(snap=>{
 
 if(!snap.exists()) return;
 
 const data = snap.val();
 
-Object.keys(data)
-.sort((a,b)=> new Date(data[b].timestamp) - new Date(data[a].timestamp))
-.forEach(key=>{
+Object.keys(data).forEach(section=>{
 
-const wrapper = document.createElement("div");
-wrapper.style.display="inline-block";
-wrapper.style.margin="10px";
-wrapper.style.textAlign="center";
+const box = document.getElementById("image-"+section);
+
+if(!box) return;
+
+box.innerHTML="";
 
 const img = document.createElement("img");
-img.src = data[key].url;
-img.style.maxWidth="600px";
+
+img.src = data[section].url;
+
+img.style.maxWidth="555px";
 img.style.borderRadius="10px";
-img.style.cursor="pointer";
 img.style.boxShadow="0 0 15px rgba(255,0,0,0.6)";
+img.style.cursor="pointer";
 
 img.onclick = ()=>{
-window.openImageModal(data[key].url);
+openImageModal(data[section].url);
 };
 
-wrapper.appendChild(img);
-publicImageDisplay.appendChild(wrapper);
+box.appendChild(img);
 
 });
 
 });
+
 }
 
 loadPublicImages();
 window.viewBookings = () => {
 
-  get(bookingsRef).then(snapshot => {
+get(bookingsRef).then(snapshot => {
 
-    bookingPopup.style.display = "flex";
+bookingPopup.style.display = "flex";
 
-    if (!snapshot.exists()) {
-      bookingList.innerHTML = `
-        <div style="text-align:center;padding:40px;">
-          <h3>No Bookings Yet</h3>
-        </div>`;
-      return;
-    }
-
-    const data = snapshot.val();
-    const sorted = Object.values(data).sort((a,b)=>a.slot-b.slot);
-
-    let html = `
-    <table style="
-      width:100%;
-      border-collapse:collapse;
-      text-align:center;
-      background:rgba(255,255,255,0.05);
-      border-radius:10px;
-      overflow:hidden;
-    ">
-      <thead style="background:#ff4444;">
-        <tr>
-          <th style="padding:12px;">Slot</th>
-          <th style="padding:12px;">Company</th>
-          <th style="padding:12px;">Role</th>
-          <th style="padding:12px;">Discord</th>
-        </tr>
-      </thead>
-      <tbody>
-    `;
-
-    sorted.forEach(booking=>{
-      html+=`
-        <tr style="border-bottom:1px solid rgba(255,255,255,0.2);">
-          <td style="padding:10px;font-weight:bold;color:#ff4444;">
-            ${booking.slot}
-          </td>
-          <td style="padding:10px;">
-            ${booking.vtcName}
-          </td>
-          <td style="padding:10px;">
-            ${booking.vtcRole}
-          </td>
-          <td style="padding:10px;">
-            ${booking.discordId}
-          </td>
-        </tr>
-      `;
-    });
-
-    html+=`</tbody></table>`;
-
-    bookingList.innerHTML = html;
-
-  });  
-
-
+if (!snapshot.exists()) {
+bookingList.innerHTML = `
+<div style="text-align:center;padding:40px;">
+<h3>No Bookings Yet</h3>
+</div>`;
+return;
 }
+
+const data = snapshot.val();
+
+let bookings = [];
+
+Object.keys(data).forEach(section=>{
+
+Object.keys(data[section]).forEach(slotKey=>{
+
+const booking = data[section][slotKey];
+
+bookings.push(booking);
+
+});
+
+});
+
+bookings.sort((a,b)=>a.slot-b.slot);
+
+let html = `
+<table style="
+width:100%;
+border-collapse:collapse;
+text-align:center;
+background:rgba(255,255,255,0.05);
+border-radius:10px;
+overflow:hidden;
+">
+
+<thead style="background:#ff4444;">
+<tr>
+<th style="padding:12px;">Section</th>
+<th style="padding:12px;">Slot</th>
+<th style="padding:12px;">Company</th>
+<th style="padding:12px;">Role</th>
+<th style="padding:12px;">Discord</th>
+</tr>
+</thead>
+
+<tbody>
+`;
+
+bookings.forEach(booking=>{
+
+html += `
+<tr style="border-bottom:1px solid rgba(255,255,255,0.2);">
+
+<td style="padding:10px;font-weight:bold;">
+${booking.section}
+</td>
+
+<td style="padding:10px;font-weight:bold;color:#ff4444;">
+${booking.slot}
+</td>
+
+<td style="padding:10px;">
+${booking.vtcName}
+</td>
+
+<td style="padding:10px;">
+${booking.vtcRole}
+</td>
+
+<td style="padding:10px;">
+${booking.discordId}
+</td>
+
+</tr>
+`;
+
+});
+
+html += "</tbody></table>";
+
+bookingList.innerHTML = html;
+
+});
+
+};
 // ===== CLOSE BOOKING POPUP =====
 window.closeBookingPopup = () => {
   bookingPopup.style.display = "none";
@@ -946,7 +1172,89 @@ if (imageModalEl) {
     }
   });
 }
-</script>
+window.addSection = ()=>{
 
+const name = sectionNameInput.value.trim();
+const slots = parseInt(sectionSlotsInput.value);
+
+if(!name || !slots) return showAlert("Enter section name and slots");
+
+const id = name.replace(/\s+/g,"_").toUpperCase();
+
+set(ref(db,"sections/"+id),{
+
+name:name,
+slots:slots
+
+}).then(()=>{
+
+sectionNameInput.value="";
+sectionSlotsInput.value="";
+
+showAlert("Section added");
+
+loadSlots();
+
+});
+
+};
+</script>
+<div class="popup" id="bookingFormPopup">
+<div class="popup-box professional-popup">
+
+<div class="popup-header">
+<div class="success-icon">📝</div>
+<h2>Complete Slot Booking</h2>
+<span class="close-icon" onclick="closeBookingForm()">✕</span>
+</div>
+
+<div class="popup-body">
+
+<!-- EVENT DETAILS -->
+<div class="booking-summary">
+
+<div class="summary-row">
+<span>Event</span>
+<b>Yash Birthday Public Convoy 2026</b>
+</div>
+
+<div class="summary-row">
+<span>Date</span>
+<b>20 September 2026</b>
+</div>
+
+<div class="summary-row">
+<span>Route</span>
+<b>Milan ➝ Strasbourg (Stein Bruch)</b>
+</div>
+
+<div class="summary-row">
+<span>Section</span>
+<b id="popupSection"></b>
+</div>
+
+<div class="summary-row">
+<span>Slot</span>
+<b id="popupSlot"></b>
+</div>
+
+</div>
+
+<hr style="opacity:0.2;margin:25px 0;">
+
+<!-- USER INPUTS -->
+<input type="text" id="vtcName" placeholder="Company Name">
+<input type="text" id="vtcRole" placeholder="Role (Driver / Media / CC)">
+<input type="url" id="vtcLink" placeholder="TruckersMP VTC Link">
+<input type="text" id="discordId" placeholder="@DiscordUsername">
+
+<button onclick="submitBooking()" class="primary-btn">
+Confirm Booking
+</button>
+
+</div>
+
+</div>
+</div>
 </body>
 </html>
