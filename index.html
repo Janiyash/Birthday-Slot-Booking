@@ -373,6 +373,39 @@ color:#aaa;
 .summary-row b{
 color:#fff;
 }
+.group-title{
+font-size:22px;
+font-weight:bold;
+text-align:center;
+display:flex;
+align-items:center;
+}
+
+/* animated dotted line */
+.group-title::before,
+.group-title::after{
+content:"";
+flex:1;
+height:2px;
+background: repeating-linear-gradient(
+90deg,
+rgba(255,0,0,0.8) 0px,
+rgba(255,0,0,0.8) 4px,
+transparent 4px,
+transparent 10px
+);
+animation: moveDots 3s linear infinite;
+}
+
+/* animation */
+@keyframes moveDots{
+0%{
+background-position:0 0;
+}
+100%{
+background-position:200px 0;
+}
+}
 </style></head>
 
 <body>
@@ -439,13 +472,21 @@ color:#fff;
 <div id="publicImageDisplay"></div>
 
 </div>
-
-<div class="alert" id="alertBox"></div>
 <div class="popup" id="bookingPopup">
-<div class="popup-box">
-<h3>All Bookings</h3>
-<div id="bookingList"></div>
-<button onclick="closeBookingPopup()">Close</button>
+<div class="popup-box professional-popup">
+
+<div class="popup-header">
+<div class="success-icon">📋</div>
+<h2>All Bookings</h2>
+<span class="close-icon" onclick="closeBookingPopup()">✕</span>
+</div>
+
+<div class="popup-body" id="bookingList"></div>
+
+<div class="popup-footer">
+<button class="primary-btn" onclick="closeBookingPopup()">Close</button>
+</div>
+
 </div>
 </div>
 
@@ -586,7 +627,7 @@ const sectionsRef = ref(db,"sections");
 
 function loadSlots(){
 
-get(sectionsRef).then(snap=>{
+Promise.all([get(sectionsRef), get(bookingsRef)]).then(([snap, bookingSnap])=>{
 
 slotContainer.innerHTML="";
 
@@ -613,10 +654,6 @@ const defaultData = {
 "SECTION-Q : TURIN - SELL PLAN":{name:"SECTION-Q : TURIN - SELL PLAN",slots:3},
 "SECTION-Q1 : TURIN - IVECO":{name:"SECTION-Q1 : TURIN - IVECO",slots:1}
 
-
-
-
-
 };
 
 set(sectionsRef,defaultData).then(loadSlots);
@@ -625,17 +662,63 @@ return;
 }
 
 const data = snap.val();
+const bookings = bookingSnap.exists() ? bookingSnap.val() : {};
 
-Object.keys(data).forEach(sectionKey=>{
+let sections = Object.keys(data).map(sectionKey => {
 
 const section = data[sectionKey];
+
+let booked = 0;
+
+if(bookings[sectionKey]){
+booked = Object.keys(bookings[sectionKey]).length;
+}
+
+return {
+key: sectionKey,
+name: section.name,
+slots: section.slots,
+booked: booked
+};
+
+});
+
+
+// ✅ SORT → available sections first
+sections.sort((a,b)=>{
+
+const aFull = a.booked >= a.slots;
+const bFull = b.booked >= b.slots;
+
+if(aFull && !bFull) return 1;
+if(!aFull && bFull) return -1;
+
+return 0;
+
+});
+
+
+// split sections
+let availableSections = sections.filter(s => s.booked < s.slots);
+let fullSections = sections.filter(s => s.booked >= s.slots);
+
+
+// ===== AVAILABLE SLOTS =====
+if(availableSections.length){
+
+const groupTitle = document.createElement("div");
+groupTitle.className = "group-title";
+groupTitle.innerText = "AVAILABLE SLOTS";
+
+slotContainer.appendChild(groupTitle);
+
+availableSections.forEach(section=>{
 
 const sectionDiv = document.createElement("div");
 sectionDiv.classList.add("section-block");
 
 const title = document.createElement("div");
 title.classList.add("section-title");
-
 title.innerText = section.name;
 
 sectionDiv.appendChild(title);
@@ -644,15 +727,14 @@ const grid = document.createElement("div");
 grid.className = "slots";
 
 for(let i=1;i<=section.slots;i++){
-
-const btn = createSlot(sectionKey,i);
-
+const btn = createSlot(section.key,i);
 grid.appendChild(btn);
-
 }
+
 sectionDiv.appendChild(grid);
+
 const imageBox = document.createElement("div");
-imageBox.id = "image-"+sectionKey;
+imageBox.id = "image-"+section.key;
 imageBox.style.marginTop = "10px";
 
 sectionDiv.appendChild(imageBox);
@@ -661,6 +743,51 @@ slotContainer.appendChild(sectionDiv);
 
 });
 
+}
+
+
+// ===== BOOKED SLOTS =====
+if(fullSections.length){
+
+const groupTitle = document.createElement("div");
+groupTitle.className = "group-title";
+groupTitle.innerText = "BOOKED SLOTS";
+
+slotContainer.appendChild(groupTitle);
+
+fullSections.forEach(section=>{
+
+const sectionDiv = document.createElement("div");
+sectionDiv.classList.add("section-block");
+
+const title = document.createElement("div");
+title.classList.add("section-title");
+title.innerText = section.name;
+
+sectionDiv.appendChild(title);
+
+const grid = document.createElement("div");
+grid.className = "slots";
+
+for(let i=1;i<=section.slots;i++){
+const btn = createSlot(section.key,i);
+grid.appendChild(btn);
+}
+
+sectionDiv.appendChild(grid);
+
+const imageBox = document.createElement("div");
+imageBox.id = "image-"+section.key;
+imageBox.style.marginTop = "10px";
+
+sectionDiv.appendChild(imageBox);
+
+slotContainer.appendChild(sectionDiv);
+
+});
+
+}
+
 loadBookedSlots();
 
 });
@@ -668,9 +795,9 @@ loadBookedSlots();
 }
 
 
-
-loadSlots();
 const bookingsRef=ref(db,"bookings");
+loadSlots();
+
 
 function loadBookedSlots(){
 
@@ -1054,9 +1181,9 @@ const data = snapshot.val();
 
 let bookings = [];
 
-Object.keys(data).forEach(section=>{
+Object.keys(data).forEach(section => {
 
-Object.keys(data[section]).forEach(slotKey=>{
+Object.keys(data[section]).forEach(slotKey => {
 
 const booking = data[section][slotKey];
 
@@ -1066,9 +1193,18 @@ bookings.push(booking);
 
 });
 
-bookings.sort((a,b)=>a.slot-b.slot);
+
+// SORT BY SECTION THEN SLOT
+bookings.sort((a,b)=>{
+if(a.section === b.section){
+return a.slot - b.slot;
+}
+return a.section.localeCompare(b.section);
+});
+
 
 let html = `
+<div style="max-height:400px;overflow:auto;">
 <table style="
 width:100%;
 border-collapse:collapse;
@@ -1091,29 +1227,29 @@ overflow:hidden;
 <tbody>
 `;
 
-bookings.forEach(booking=>{
+bookings.forEach(b => {
 
 html += `
 <tr style="border-bottom:1px solid rgba(255,255,255,0.2);">
 
 <td style="padding:10px;font-weight:bold;">
-${booking.section}
+${b.section}
 </td>
 
 <td style="padding:10px;font-weight:bold;color:#ff4444;">
-${booking.slot}
+${b.slot}
 </td>
 
 <td style="padding:10px;">
-${booking.vtcName}
+${b.vtcName}
 </td>
 
 <td style="padding:10px;">
-${booking.vtcRole}
+${b.vtcRole}
 </td>
 
 <td style="padding:10px;">
-${booking.discordId}
+${b.discordId}
 </td>
 
 </tr>
@@ -1121,7 +1257,7 @@ ${booking.discordId}
 
 });
 
-html += "</tbody></table>";
+html += "</tbody></table></div>";
 
 bookingList.innerHTML = html;
 
